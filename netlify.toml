@@ -2,6 +2,17 @@
   # Command to build your project (not applicable for Node.js server)
   command = "echo 'No build steps required'"
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/server.js"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+
+
 [[redirects]]
   # Redirect all requests to server.js
   from = "/*"
