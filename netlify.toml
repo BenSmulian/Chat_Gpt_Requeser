@@ -2,9 +2,6 @@
   # Command to build your project (not applicable for Node.js server)
   command = "echo 'No build steps required'"
 
-  # Directory to deploy (not applicable for Node.js server)
-  publish = "public"
-
 [[redirects]]
   # Redirect all requests to server.js
   from = "/*"
