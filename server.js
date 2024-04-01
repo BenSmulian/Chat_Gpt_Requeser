@@ -1,54 +1,38 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const shortid = require('shortid');
-const fs = require('fs');
+const http = require('http');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 443;
 
-// Load existing URLs from JSON file
-let urls = {};
-try {
-    const data = fs.readFileSync('urls.json');
-    urls = JSON.parse(data);
-} catch (error) {
-    console.log('Error reading urls.json:', error.message);
-}
+const server = http.createServer((req, res) => {
+  // Set CORS headers to allow requests from any origin
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', '*');
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-// Endpoint to create short URL
-app.post('/shorten', (req, res) => {
-    const originalUrl = req.body.url;
-    const shortCode = shortid.generate();
-
-    urls[shortCode] = originalUrl;
-
-    // Save updated URLs to JSON file
-    fs.writeFile('urls.json', JSON.stringify(urls), (err) => {
-        if (err) {
-            console.error('Error writing to urls.json:', err.message);
-            res.status(500).json({ error: 'Internal server error' });
-        } else {
-            res.json({ shortUrl: `${req.protocol}://${req.get('host')}/${shortCode}` });
-        }
+  // Handle POST requests to save data
+  if (req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString(); // convert Buffer to string
     });
+    req.on('end', () => {
+      // Parse the JSON data from the request body
+      const data = JSON.parse(body);
+      
+      // Here you can process the data as needed
+      // For this example, let's just log the data
+      console.log('Received data:', data);
+      
+      // Respond with a success message
+      res.writeHead(200, {'Content-Type': 'text/plain'});
+      res.end('Data received successfully');
+    });
+  } else {
+    // For other HTTP methods or routes, respond with a 404 Not Found error
+    res.writeHead(404, {'Content-Type': 'text/plain'});
+    res.end('404 Not Found');
+  }
 });
 
-// Redirect short URL to original URL
-app.get('/:shortCode', (req, res) => {
-    const shortCode = req.params.shortCode;
-    const originalUrl = urls[shortCode];
-
-    if (originalUrl) {
-        res.redirect(originalUrl);
-    } else {
-        res.status(404).send('Short URL not found');
-    }
-});
-
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+server.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
 });
